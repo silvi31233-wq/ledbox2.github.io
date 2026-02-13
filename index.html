@@ -381,17 +381,27 @@
       ];
 
       // ✅ 피치별 가능한 조합(단/열)
+
+function normalizeEncodedName(name) {
+  // name이 이미 "2%EB%8B%A8..." 처럼 인코딩되어 있어도
+  // decode -> encode로 한 번만 인코딩된 형태로 맞춘다.
+  try {
+    return encodeURIComponent(decodeURIComponent(name));
+  } catch (e) {
+    // 혹시 깨진 %문자열이면 그대로 인코딩
+    return encodeURIComponent(name);
+  }
+}      
+      
 function previewImgUrl(pitchId, row, col){
-  const pid = String(pitchId || "").trim(); // P6/P8/P10 그대로 유지(대소문자 유지)
-  const fileName = `${row}단${col}열.png`;
+  const pid = String(pitchId || "").trim(); // P6/P8/P10 그대로 (대소문자 유지)
+  const rawFile = `${row}단${col}열.png`;
 
-  // 한글 파일명은 파일명만 인코딩 (이중 인코딩 방지)
-  const encodedFile = encodeURIComponent(fileName);
+  // ★ 여기서 "한 번만 인코딩"되도록 정상화
+  const file = normalizeEncodedName(rawFile);
 
-  // 현재 페이지 기준으로 상대경로 생성 (repo prefix 자동 반영)
-  const u = new URL(`${pid}/${encodedFile}`, window.location.href);
-
-  return u.href;
+  // repo prefix 자동 포함 (현재 페이지 기준)
+  return new URL(`${pid}/${file}`, window.location.href).href;
 }
 
 
